@@ -1,0 +1,150 @@
+﻿using LibUsbDotNet;
+using LibUsbDotNet.Main;
+using System;
+using System.Linq;
+using System.Timers;
+using Timer = System.Timers.Timer;
+
+namespace TasollerLED
+{
+    internal class Padlight
+    {
+        public static UsbDevice MyUsbDevice;
+        public static UsbDeviceFinder MyUsbFinder = new UsbDeviceFinder(7375, 9011);
+        static Timer Sendtimer = new Timer();
+        static Timer Readtimer = new Timer();
+        //なぜか普通にインスタンス化してもだめなので
+        public static PadColor[] padColor = PadColor.GetinstansedPadcolor();
+        public static void TimerStart(int interval = 16)
+        {
+            Sendtimer.Elapsed += new ElapsedEventHandler(SendTick);
+            Readtimer.Elapsed += new ElapsedEventHandler(ReadTick);
+            Readtimer.Interval = interval;
+            Sendtimer.Interval = interval;
+            Sendtimer.Start();
+            Readtimer.Start();
+        }
+        public static void TimerStop()
+        {
+            Sendtimer.Stop();
+            Readtimer.Stop();
+        }
+        static void SendTick(object sender, ElapsedEventArgs e)
+        {
+            UsbEndpointWriter writer = MyUsbDevice.OpenEndpointWriter(WriteEndpointID.Ep03);
+            int bytesWritten;
+            byte[] data = new byte[240];
+            data[0] = (byte)'B';
+            data[1] = (byte)'L';
+            data[2] = (byte)'\x00';
+
+            //色の設定
+            //for (int i = 0; i < padColor.Length; i++)
+            //{
+            //    padColor[i].R = 0;
+            //    padColor[i].G = 20;
+            //    padColor[i].B = 0;
+            //}
+
+            //後から変更も可
+            //padColor[20].B = 250;
+
+            //送るデータを代入
+            foreach (var pad in padColor)
+            {
+                data[pad.Gbyte] = pad.G;
+                data[pad.Rbyte] = pad.R;
+                data[pad.Bbyte] = pad.B;
+            }
+
+            ErrorCode ec = writer.Write(data, 2000, out bytesWritten);
+            if (ec != ErrorCode.None) throw new Exception(UsbDevice.LastErrorString);
+        }
+
+        static void ReadTick(object sender, ElapsedEventArgs e)
+        {
+            UsbEndpointReader reader = MyUsbDevice.OpenEndpointReader(ReadEndpointID.Ep04);
+            byte[] readBuffer = new byte[36];
+            int bytesRead;
+
+            // If the device hasn't sent data in the last 5 seconds,
+            // a timeout error (ec = IoTimedOut) will occur. 
+            reader.Read(readBuffer, 1000, out bytesRead);
+
+            if (bytesRead != 0)
+            {
+                string bufferitem = "";
+                //try
+                //{
+                //    foreach (var item in readBuffer)
+                //    {
+                //        bufferitem += item.ToString() + ",";
+                //    }
+                //}
+                //finally
+                //{
+                //    bufferitem += Environment.NewLine;
+                //};
+            }
+        }
+        public static Tuple<ErrorCode, string> DeviceSetUp()
+        {
+            ErrorCode ec = ErrorCode.None;
+            try
+            {
+                MyUsbDevice = UsbDevice.OpenUsbDevice(MyUsbFinder);
+
+                if (MyUsbDevice == null) throw new Exception("Device Not Found.");
+                IUsbDevice wholeUsbDevice = MyUsbDevice as IUsbDevice;
+                if (!ReferenceEquals(wholeUsbDevice, null))
+                {
+                    wholeUsbDevice.SetConfiguration(1);
+                    wholeUsbDevice.ClaimInterface(0);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Tuple.Create(ec, ex.ToString());
+            }
+            return Tuple.Create(ec, "接続");
+        }
+    }
+
+    public class PadColor
+    {
+        static public PadColor[] GetinstansedPadcolor(int len = 32)
+        {
+            PadColor[] ret = new PadColor[len];
+            for (int i = 0; i < len; i++)
+            {
+                ret[i] = new PadColor
+                {
+                    padnumber = i + 1
+                };
+            }
+
+            return ret;
+        }
+
+        public int padnumber = 0;
+
+        public byte G = 0;
+        public byte R = 0;
+        public byte B = 0;
+
+        public int Gbyte
+        {
+            get => padnumber * 3;
+        }
+
+        public int Rbyte
+        {
+            get => padnumber * 3 + 1;
+        }
+
+        public int Bbyte
+        {
+            get => padnumber * 3 + 2;
+        }
+    }
+}
