@@ -11,11 +11,19 @@ namespace TasollerLED
     {
         public static UsbDevice MyUsbDevice;
         public static UsbDeviceFinder MyUsbFinder = new UsbDeviceFinder(7375, 9011);
+
+        //入力データ
+        private static byte[] TouchData = new byte[32]; //初めの３つの邪魔なデータを取り除いて扱いやすいようにしたタッチデータ
+        private static byte[] AirData = new byte[0];  //[0]しかないけどこれしかやり方知らない
+
+        //timer
         static Timer Sendtimer = new Timer();
         static Timer Readtimer = new Timer();
+
         //なぜか普通にインスタンス化してもだめなので
         public static PadColor[] padColor = PadColor.GetinstansedPadcolor();
-        public static void TimerStart(int interval = 16)
+
+        public static void TimerStart(int interval = 16)//16ms
         {
             Sendtimer.Elapsed += new ElapsedEventHandler(SendTick);
             Readtimer.Elapsed += new ElapsedEventHandler(ReadTick);
@@ -38,6 +46,31 @@ namespace TasollerLED
             data[1] = (byte)'L';
             data[2] = (byte)'\x00';
 
+            Array.Reverse(TouchData);
+
+            for (int i = 0; i < TouchData.Length; i++)
+            {
+                if (i % 2 == 0)
+                {
+                    if (TouchData[i] > 10)
+                    {
+                        padColor[i].R = 100; //優しく光る
+                    }
+                }
+                else
+                {
+                    if (TouchData[i] > 10)
+                    {
+                        padColor[i - 1].R = 100; //優しく光る
+                    }
+                }
+
+                //色リセット
+                padColor[i].R = 0;
+                padColor[i].G = 0;
+                padColor[i].B = 0;
+            }
+
             //色の設定
             //for (int i = 0; i < padColor.Length; i++)
             //{
@@ -49,7 +82,7 @@ namespace TasollerLED
             //後から変更も可
             //padColor[20].B = 250;
 
-            //送るデータを代入
+            //送るデータをpadColorから代入
             foreach (var pad in padColor)
             {
                 data[pad.Gbyte] = pad.G;
@@ -85,6 +118,9 @@ namespace TasollerLED
                 //{
                 //    bufferitem += Environment.NewLine;
                 //};
+
+                AirData = readBuffer.Skip(3).Take(1).ToArray();
+                TouchData = readBuffer.Skip(4).ToArray();
             }
         }
         public static Tuple<ErrorCode, string> DeviceSetUp()
