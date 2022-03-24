@@ -23,12 +23,12 @@ namespace TasollerLED
         //なぜか普通にインスタンス化してもだめなので
         public static PadColor[] padColor = PadColor.GetinstansedPadcolor();
 
-        public static void TimerStart(int interval = 16)//16ms
+        public static void TimerStart(int readinterval = 1, int sendinterval = 16)//16ms
         {
             Sendtimer.Elapsed += new ElapsedEventHandler(SendTick);
             Readtimer.Elapsed += new ElapsedEventHandler(ReadTick);
-            Readtimer.Interval = interval;
-            Sendtimer.Interval = interval;
+            Readtimer.Interval = readinterval;
+            Sendtimer.Interval = sendinterval;
             Sendtimer.Start();
             Readtimer.Start();
         }
@@ -46,10 +46,16 @@ namespace TasollerLED
             data[1] = (byte)'L';
             data[2] = (byte)'\x00';
 
+            //スライダーの右から処理したいので反転させます
             Array.Reverse(TouchData);
 
             for (int i = 0; i < TouchData.Length; i++)
             {
+                //色リセット
+                padColor[i].R = 0;
+                padColor[i].G = 0;
+                padColor[i].B = 0;
+
                 if (i % 2 == 0)
                 {
                     if (TouchData[i] > 10)
@@ -61,14 +67,9 @@ namespace TasollerLED
                 {
                     if (TouchData[i] > 10)
                     {
-                        padColor[i - 1].R = 100; //優しく光る
+                        padColor[i - 1].G = 100; //光る
                     }
                 }
-
-                //色リセット
-                padColor[i].R = 0;
-                padColor[i].G = 0;
-                padColor[i].B = 0;
             }
 
             //色の設定
