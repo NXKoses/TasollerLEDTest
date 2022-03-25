@@ -23,7 +23,7 @@ namespace TasollerLED
         //なぜか普通にインスタンス化してもだめなので
         public static PadData[] padColor = PadData.GetinstansedPadcolor();
 
-        public static void TimerStart(int readinterval = 16, int sendinterval = 16)//16ms
+        public static void TimerStart(int readinterval = 1, int sendinterval = 1)//16ms
         {
             Sendtimer.Elapsed += new ElapsedEventHandler(SendTick);
             Readtimer.Elapsed += new ElapsedEventHandler(ReadTick);
@@ -47,14 +47,11 @@ namespace TasollerLED
             data[1] = (byte)'L';
             data[2] = (byte)'\x00';
 
-            //スライダーの右から処理したいので反転させます
-            //Array.Reverse(TouchData);   //こいつが有効だとバグる
-
             for (int i = 0; i < TouchData.Length; i++)
             {
                 //色リセット
                 padColor[i].R = 0;
-                padColor[i].G = 0;
+                padColor[i].G = 20;
                 padColor[i].B = 0;
 
                 //センサーの上か下かを検知
@@ -64,12 +61,16 @@ namespace TasollerLED
                     if (TouchData[i] > 10)
                     {
                         padColor[i].R = 100; // 光る
-                        kB_EVENT.KeyDown(padColor[i].KEY_DATA.key);
-                        padColor[i].KEY_DATA.isdown = true;
+                        //キーを離している状態のキーにしか実行しないようにする
+                        if (!padColor[i].KEY_DATA.isdown)
+                        {
+                            kB_EVENT.KeyDown(padColor[i].KEY_DATA.key);
+                            padColor[i].KEY_DATA.isdown = true;
+                        }
                     }
                     else
                     {
-                        //キーを押している状態の時にしか実行しないようにする
+                        //キーを押している状態のキーにしか実行しないようにする
                         if (padColor[i].KEY_DATA.isdown)
                         {
                             kB_EVENT.KeyUp(padColor[i].KEY_DATA);
@@ -83,12 +84,16 @@ namespace TasollerLED
                     if (TouchData[i] > 10)
                     {
                         padColor[i - 1].G = 100; // 光る
-                        kB_EVENT.KeyDown(padColor[i].KEY_DATA.key);
-                        padColor[i].KEY_DATA.isdown = true;
+                        //キーを離している状態のキーにしか実行しないようにする
+                        if (!padColor[i].KEY_DATA.isdown)
+                        {
+                            kB_EVENT.KeyDown(padColor[i].KEY_DATA.key);
+                            padColor[i].KEY_DATA.isdown = true;
+                        }
                     }
                     else
                     {
-                        //キーを押している状態の時にしか実行しないようにする
+                        //キーを押している状態のキーにしか実行しないようにする
                         if (padColor[i].KEY_DATA.isdown)
                         {
                             kB_EVENT.KeyUp(padColor[i].KEY_DATA);
