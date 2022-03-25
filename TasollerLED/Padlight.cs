@@ -40,6 +40,7 @@ namespace TasollerLED
         static void SendTick(object sender, ElapsedEventArgs e)
         {
             UsbEndpointWriter writer = MyUsbDevice.OpenEndpointWriter(WriteEndpointID.Ep03);
+            KeySend keySend = new KeySend();
             int bytesWritten;
             byte[] data = new byte[240];
             data[0] = (byte)'B';
@@ -47,7 +48,7 @@ namespace TasollerLED
             data[2] = (byte)'\x00';
 
             //スライダーの右から処理したいので反転させます
-            Array.Reverse(TouchData);
+            //Array.Reverse(TouchData);   //こいつが有効だとバグる
 
             for (int i = 0; i < TouchData.Length; i++)
             {
@@ -56,21 +57,35 @@ namespace TasollerLED
                 padColor[i].G = 0;
                 padColor[i].B = 0;
 
+                //センサーの上か下かを検知
                 if (i % 2 == 0)
                 {
+                    //下
                     if (TouchData[i] > 10)
                     {
                         padColor[i].R = 100; //優しく光る
+                        keySend.KeyDown(padColor[i].INPUT.ki.wVk);
+                    }
+                    else
+                    {
+                        keySend.KeyUp(padColor[i].INPUT);
                     }
                 }
                 else
                 {
+                    //上
                     if (TouchData[i] > 10)
                     {
                         padColor[i - 1].G = 100; //光る
+                        keySend.KeyDown(padColor[i].INPUT.ki.wVk);
+                    }
+                    else
+                    {
+                        keySend.KeyUp(padColor[i].INPUT);
                     }
                 }
             }
+
 
             //色の設定
             //for (int i = 0; i < padColor.Length; i++)
@@ -121,7 +136,7 @@ namespace TasollerLED
                 //};
 
                 AirData = readBuffer.Skip(3).Take(1).ToArray();
-                TouchData = readBuffer.Skip(4).ToArray();
+                TouchData = readBuffer.Skip(4).Reverse().ToArray();
             }
         }
         public static Tuple<ErrorCode, string> DeviceSetUp()
@@ -152,16 +167,20 @@ namespace TasollerLED
         static public PadColor[] GetinstansedPadcolor(int len = 32)
         {
             PadColor[] ret = new PadColor[len];
+            KeySend keySend = new KeySend();
             for (int i = 0; i < len; i++)
             {
                 ret[i] = new PadColor
                 {
-                    padnumber = i + 1
+                    padnumber = i + 1,
+                    INPUT = keySend.GetInstanseINPUT(KeyCode.Tasoller32KeyMap[i])
                 };
             }
 
             return ret;
         }
+
+        public KeySend.INPUT INPUT;
 
         public int padnumber = 0;
 
