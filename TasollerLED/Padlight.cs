@@ -2,6 +2,7 @@
 using LibUsbDotNet.Main;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Timers;
 using Timer = System.Timers.Timer;
 
@@ -21,9 +22,9 @@ namespace TasollerLED
         static Timer Readtimer = new Timer();
 
         //なぜか普通にインスタンス化してもだめなので
-        public static PadColor[] padColor = PadColor.GetinstansedPadcolor();
+        public static PadData[] padColor = PadData.GetinstansedPadcolor();
 
-        public static void TimerStart(int readinterval = 1, int sendinterval = 16)//16ms
+        public static void TimerStart(int readinterval = 16, int sendinterval = 16)//16ms
         {
             Sendtimer.Elapsed += new ElapsedEventHandler(SendTick);
             Readtimer.Elapsed += new ElapsedEventHandler(ReadTick);
@@ -40,7 +41,7 @@ namespace TasollerLED
         static void SendTick(object sender, ElapsedEventArgs e)
         {
             UsbEndpointWriter writer = MyUsbDevice.OpenEndpointWriter(WriteEndpointID.Ep03);
-            KeySend keySend = new KeySend();
+            KB_EVENT kB_EVENT = new KB_EVENT();
             int bytesWritten;
             byte[] data = new byte[240];
             data[0] = (byte)'B';
@@ -63,12 +64,12 @@ namespace TasollerLED
                     //下
                     if (TouchData[i] > 10)
                     {
-                        padColor[i].R = 100; //優しく光る
-                        keySend.KeyDown(padColor[i].INPUT.ki.wVk);
+                        padColor[i].R = 100; // 光る
+                        kB_EVENT.KeyDown(padColor[i].KEY_DATA.key);
                     }
                     else
                     {
-                        keySend.KeyUp(padColor[i].INPUT);
+                        kB_EVENT.KeyUp(padColor[i].KEY_DATA);
                     }
                 }
                 else
@@ -76,12 +77,12 @@ namespace TasollerLED
                     //上
                     if (TouchData[i] > 10)
                     {
-                        padColor[i - 1].G = 100; //光る
-                        keySend.KeyDown(padColor[i].INPUT.ki.wVk);
+                        padColor[i - 1].G = 100; // 光る
+                        kB_EVENT.KeyDown(padColor[i].KEY_DATA.key);
                     }
                     else
                     {
-                        keySend.KeyUp(padColor[i].INPUT);
+                        kB_EVENT.KeyUp(padColor[i].KEY_DATA);
                     }
                 }
             }
@@ -162,25 +163,25 @@ namespace TasollerLED
         }
     }
 
-    public class PadColor
+    public class PadData
     {
-        static public PadColor[] GetinstansedPadcolor(int len = 32)
+        static public PadData[] GetinstansedPadcolor(int len = 32)
         {
-            PadColor[] ret = new PadColor[len];
-            KeySend keySend = new KeySend();
+            PadData[] ret = new PadData[len];
+            KB_EVENT kB_EVENT = new KB_EVENT();
             for (int i = 0; i < len; i++)
             {
-                ret[i] = new PadColor
+                ret[i] = new PadData
                 {
                     padnumber = i + 1,
-                    INPUT = keySend.GetInstanseINPUT(KeyCode.Tasoller32KeyMap[i])
+                    KEY_DATA = kB_EVENT.GET_INSTANCE(KeyCode.Tasoller32KeyMap[i])
                 };
             }
 
             return ret;
         }
 
-        public KeySend.INPUT INPUT;
+        public KEY_DATA KEY_DATA;
 
         public int padnumber = 0;
 
