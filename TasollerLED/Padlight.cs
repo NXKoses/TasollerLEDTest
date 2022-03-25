@@ -2,7 +2,6 @@
 using LibUsbDotNet.Main;
 using System;
 using System.Linq;
-using System.Threading;
 using System.Timers;
 using Timer = System.Timers.Timer;
 
@@ -66,10 +65,16 @@ namespace TasollerLED
                     {
                         padColor[i].R = 100; // 光る
                         kB_EVENT.KeyDown(padColor[i].KEY_DATA.key);
+                        padColor[i].KEY_DATA.isdown = true;
                     }
                     else
                     {
-                        kB_EVENT.KeyUp(padColor[i].KEY_DATA);
+                        //キーを押している状態の時にしか実行しないようにする
+                        if (padColor[i].KEY_DATA.isdown)
+                        {
+                            kB_EVENT.KeyUp(padColor[i].KEY_DATA);
+                            padColor[i].KEY_DATA.isdown = false;
+                        }
                     }
                 }
                 else
@@ -79,10 +84,16 @@ namespace TasollerLED
                     {
                         padColor[i - 1].G = 100; // 光る
                         kB_EVENT.KeyDown(padColor[i].KEY_DATA.key);
+                        padColor[i].KEY_DATA.isdown = true;
                     }
                     else
                     {
-                        kB_EVENT.KeyUp(padColor[i].KEY_DATA);
+                        //キーを押している状態の時にしか実行しないようにする
+                        if (padColor[i].KEY_DATA.isdown)
+                        {
+                            kB_EVENT.KeyUp(padColor[i].KEY_DATA);
+                            padColor[i].KEY_DATA.isdown = false;
+                        }
                     }
                 }
             }

@@ -40,5 +40,6 @@ namespace TasollerLED
     public class KEY_DATA
     {
         public int key { get; set; }
+        public bool isdown { get; set; } = false;
     }
 }
