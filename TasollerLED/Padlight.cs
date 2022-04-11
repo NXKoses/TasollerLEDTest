@@ -2,8 +2,7 @@
 using LibUsbDotNet.Main;
 using System;
 using System.Linq;
-using System.Timers;
-using Timer = System.Timers.Timer;
+using static TasollerLED.Timer;
 
 namespace TasollerLED
 {
@@ -11,37 +10,32 @@ namespace TasollerLED
     {
         public static UsbDevice MyUsbDevice;
         public static UsbDeviceFinder MyUsbFinder = new UsbDeviceFinder(7375, 9011);
+        public static System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
 
         //入力データ
         private static byte[] TouchData = new byte[32]; //初めの３つの邪魔なデータを取り除いて扱いやすいようにしたタッチデータ
         private static byte[] AirData = new byte[0];  //[0]しかないけどこれしかやり方知らない
 
         //timer
-        static Timer Sendtimer = new Timer();
-        static Timer Readtimer = new Timer();
+        //static Timer Sendtimer = new Timer();
+        //static Timer Readtimer = new Timer();
+
+        Timer timer = new Timer();
 
         //なぜか普通にインスタンス化してもだめなので
-        public static PadData[] padColor = PadData.GetinstansedPadcolor();
+        public static PadData[] padColor = PadData.GetinstancedPadcolor();
 
-        public static void TimerStart(int readinterval = 1, int sendinterval = 1)//16ms
+        public void TimerStart()//16ms
         {
-            Sendtimer.Elapsed += new ElapsedEventHandler(SendTick);
-            Readtimer.Elapsed += new ElapsedEventHandler(ReadTick);
-            Readtimer.Interval = readinterval;
-            Sendtimer.Interval = sendinterval;
-            Sendtimer.Start();
-            Readtimer.Start();
+            timer.UpdateTimer(1, 1);
         }
-        public static void TimerStop()
+        public void TimerStop()
         {
-            Sendtimer.Stop();
-            Readtimer.Stop();
+            timer.StopTimer();
         }
-        static void SendTick(object sender, ElapsedEventArgs e)
+        public static void SendTick()
         {
             UsbEndpointWriter writer = MyUsbDevice.OpenEndpointWriter(WriteEndpointID.Ep03);
-            KB_EVENT kB_EVENT = new KB_EVENT();
-            int bytesWritten;
             byte[] data = new byte[240];
             data[0] = (byte)'B';
             data[1] = (byte)'L';
@@ -64,7 +58,7 @@ namespace TasollerLED
                         //キーを離している状態のキーにしか実行しないようにする
                         if (!padColor[i].KEY_DATA.isdown)
                         {
-                            kB_EVENT.KeyDown(padColor[i].KEY_DATA.key);
+                            KB_EVENT.KeyDown(padColor[i].KEY_DATA.key);
                             padColor[i].KEY_DATA.isdown = true;
                         }
                     }
@@ -73,7 +67,7 @@ namespace TasollerLED
                         //キーを押している状態のキーにしか実行しないようにする
                         if (padColor[i].KEY_DATA.isdown)
                         {
-                            kB_EVENT.KeyUp(padColor[i].KEY_DATA);
+                            KB_EVENT.KeyUp(padColor[i].KEY_DATA);
                             padColor[i].KEY_DATA.isdown = false;
                         }
                     }
@@ -87,7 +81,7 @@ namespace TasollerLED
                         //キーを離している状態のキーにしか実行しないようにする
                         if (!padColor[i].KEY_DATA.isdown)
                         {
-                            kB_EVENT.KeyDown(padColor[i].KEY_DATA.key);
+                            KB_EVENT.KeyDown(padColor[i].KEY_DATA.key);
                             padColor[i].KEY_DATA.isdown = true;
                         }
                     }
@@ -96,7 +90,7 @@ namespace TasollerLED
                         //キーを押している状態のキーにしか実行しないようにする
                         if (padColor[i].KEY_DATA.isdown)
                         {
-                            kB_EVENT.KeyUp(padColor[i].KEY_DATA);
+                            KB_EVENT.KeyUp(padColor[i].KEY_DATA);
                             padColor[i].KEY_DATA.isdown = false;
                         }
                     }
@@ -123,35 +117,19 @@ namespace TasollerLED
                 data[pad.Bbyte] = pad.B;
             }
 
-            ErrorCode ec = writer.Write(data, 2000, out bytesWritten);
+            ErrorCode ec = writer.Write(data, 2000, out int bytesWritten);
             if (ec != ErrorCode.None) throw new Exception(UsbDevice.LastErrorString);
         }
 
-        static void ReadTick(object sender, ElapsedEventArgs e)
+        public static void ReadTick()
         {
             UsbEndpointReader reader = MyUsbDevice.OpenEndpointReader(ReadEndpointID.Ep04);
             byte[] readBuffer = new byte[36];
-            int bytesRead;
 
-            // If the device hasn't sent data in the last 5 seconds,
-            // a timeout error (ec = IoTimedOut) will occur. 
-            reader.Read(readBuffer, 1000, out bytesRead);
+            reader.Read(readBuffer, 1000, out int bytesRead);
 
             if (bytesRead != 0)
             {
-                string bufferitem = "";
-                //try
-                //{
-                //    foreach (var item in readBuffer)
-                //    {
-                //        bufferitem += item.ToString() + ",";
-                //    }
-                //}
-                //finally
-                //{
-                //    bufferitem += Environment.NewLine;
-                //};
-
                 AirData = readBuffer.Skip(3).Take(1).ToArray();
                 TouchData = readBuffer.Skip(4).Reverse().ToArray();
             }
@@ -164,8 +142,7 @@ namespace TasollerLED
                 MyUsbDevice = UsbDevice.OpenUsbDevice(MyUsbFinder);
 
                 if (MyUsbDevice == null) throw new Exception("Device Not Found.");
-                IUsbDevice wholeUsbDevice = MyUsbDevice as IUsbDevice;
-                if (!ReferenceEquals(wholeUsbDevice, null))
+                if (MyUsbDevice is IUsbDevice wholeUsbDevice)
                 {
                     wholeUsbDevice.SetConfiguration(1);
                     wholeUsbDevice.ClaimInterface(0);
@@ -181,7 +158,7 @@ namespace TasollerLED
 
     public class PadData
     {
-        static public PadData[] GetinstansedPadcolor(int len = 32)
+        public static PadData[] GetinstancedPadcolor(int len = 32)
         {
             PadData[] ret = new PadData[len];
             KB_EVENT kB_EVENT = new KB_EVENT();
@@ -190,7 +167,7 @@ namespace TasollerLED
                 ret[i] = new PadData
                 {
                     padnumber = i + 1,
-                    KEY_DATA = kB_EVENT.GET_INSTANCE(KeyCode.Tasoller32KeyMap[i])
+                    KEY_DATA = kB_EVENT.Get_instance(KeyCode.Tasoller32KeyMap[i])
                 };
             }
 

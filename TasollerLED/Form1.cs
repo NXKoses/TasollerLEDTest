@@ -10,10 +10,10 @@ namespace TasollerLED
 {
     public partial class Form1 : Form
     {
+        Padlight padlight = new Padlight();
         public Form1()
         {
             InitializeComponent();
-
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -24,12 +24,12 @@ namespace TasollerLED
 
         private void button2_Click(object sender, EventArgs e)
         {
-            Padlight.TimerStart();
+            padlight.TimerStart();
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            Padlight.TimerStop();
+            padlight.TimerStop();
         }
 
         private void trackBarR_Scroll(object sender, EventArgs e)

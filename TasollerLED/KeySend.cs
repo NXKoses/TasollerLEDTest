@@ -19,20 +19,22 @@ namespace TasollerLED
 
     public class KB_EVENT
     {
-        public void KeyDown(int key)
+        public static void KeyDown(int key)
         {
             win32api.keybd_event((byte)key, 0, 0, (UIntPtr)0);
         }
 
-        public void KeyUp(KEY_DATA keydata)
+        public static void KeyUp(KEY_DATA keydata)
         {
             win32api.keybd_event((byte)keydata.key, 0, 2/*KEYEVENTF_KEYUP*/, (UIntPtr)0);
         }
 
-        public KEY_DATA GET_INSTANCE(int key)
+        public KEY_DATA Get_instance(int key)
         {
-            var keydata = new KEY_DATA();
-            keydata.key = key;
+            var keydata = new KEY_DATA
+            {
+                key = key
+            };
             return keydata;
         }
     }
