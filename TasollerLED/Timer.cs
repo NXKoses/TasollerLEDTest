@@ -83,10 +83,14 @@ namespace TasollerLED
             EnterCriticalSection(ref CriticalSection);
             try
             {
-                OnTimerEventHandler onTimerEvent = Padlight.SendTick;
-                OnTimerEventHandler onTimerEvent1 = Padlight.ReadTick;
-                onTimerEvent.Invoke();
+                OnTimerEventHandler onTimerEvent1 = Padlight.SliderTick;
+                OnTimerEventHandler onTimerEvent2 = Padlight.AirTick;
+                OnTimerEventHandler onTimerEvent3 = Padlight.WriteColorTick;
+                OnTimerEventHandler onTimerEvent4 = Padlight.ReadTick;
                 onTimerEvent1.Invoke();
+                onTimerEvent2.Invoke();
+                onTimerEvent3.Invoke();
+                onTimerEvent4.Invoke();
             }
             finally
             {

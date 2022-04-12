@@ -94,7 +94,7 @@ namespace TasollerLED
             // 
             // trackBarR
             // 
-            this.trackBarR.Location = new System.Drawing.Point(378, 135);
+            this.trackBarR.Location = new System.Drawing.Point(169, 48);
             this.trackBarR.Maximum = 250;
             this.trackBarR.Name = "trackBarR";
             this.trackBarR.Size = new System.Drawing.Size(195, 45);
@@ -103,7 +103,7 @@ namespace TasollerLED
             // 
             // trackBarG
             // 
-            this.trackBarG.Location = new System.Drawing.Point(378, 186);
+            this.trackBarG.Location = new System.Drawing.Point(169, 99);
             this.trackBarG.Maximum = 250;
             this.trackBarG.Name = "trackBarG";
             this.trackBarG.Size = new System.Drawing.Size(195, 45);
@@ -112,7 +112,7 @@ namespace TasollerLED
             // 
             // trackBarB
             // 
-            this.trackBarB.Location = new System.Drawing.Point(378, 237);
+            this.trackBarB.Location = new System.Drawing.Point(169, 150);
             this.trackBarB.Maximum = 250;
             this.trackBarB.Name = "trackBarB";
             this.trackBarB.Size = new System.Drawing.Size(195, 45);
@@ -121,7 +121,7 @@ namespace TasollerLED
             // 
             // numericUpDown1
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(378, 110);
+            this.numericUpDown1.Location = new System.Drawing.Point(169, 15);
             this.numericUpDown1.Maximum = new decimal(new int[] {
             32,
             0,
@@ -135,7 +135,7 @@ namespace TasollerLED
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(366, 189);
             this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.trackBarB);
             this.Controls.Add(this.trackBarG);

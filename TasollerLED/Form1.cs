@@ -34,17 +34,17 @@ namespace TasollerLED
 
         private void trackBarR_Scroll(object sender, EventArgs e)
         {
-            Padlight.padColor[(int)numericUpDown1.Value].R = (byte)trackBarR.Value;
+            Padlight.sliderPadBase[(int)numericUpDown1.Value].R = (byte)trackBarR.Value;
         }
 
         private void trackBarG_Scroll(object sender, EventArgs e)
         {
-            Padlight.padColor[(int)numericUpDown1.Value].G = (byte)trackBarG.Value;
+            Padlight.sliderPadBase[(int)numericUpDown1.Value].G = (byte)trackBarG.Value;
         }
 
         private void trackBarB_Scroll(object sender, EventArgs e)
         {
-            Padlight.padColor[(int)numericUpDown1.Value].B = (byte)trackBarB.Value;
+            Padlight.sliderPadBase[(int)numericUpDown1.Value].B = (byte)trackBarB.Value;
         }
     }
 }
