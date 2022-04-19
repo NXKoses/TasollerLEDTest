@@ -9,16 +9,12 @@ namespace TasollerLED
     {
         public static UsbDevice MyUsbDevice;
         public static UsbDeviceFinder MyUsbFinder = new UsbDeviceFinder(7375, 9011);
-        public static System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
 
         //入力データ
         private static byte[] SliderTouchData = new byte[32]; //初めの３つの邪魔なデータを取り除いて扱いやすいようにしたタッチデータ
         private static byte[] SliderAirData = new byte[0];
 
         //timer
-        //static Timer Sendtimer = new Timer();
-        //static Timer Readtimer = new Timer();
-
         Timer timer = new Timer();
 
         //なぜか普通にインスタンス化してもだめなので
@@ -29,6 +25,7 @@ namespace TasollerLED
         {
             timer.UpdateTimer(1, 1);
         }
+
         public void TimerStop()
         {
             timer.StopTimer();
@@ -99,7 +96,7 @@ namespace TasollerLED
                 {
                     if (sliderAirBase[i].KEY_DATA.isdown == false)
                     {
-                        KB_EVENT.KeyDown(sliderAirBase[i].KEY_DATA.key);
+                        KB_EVENT.KeyDown(sliderAirBase[i].KEY_DATA);
                         sliderAirBase[i].KEY_DATA.isdown = true;
                     }
                 }
@@ -112,7 +109,6 @@ namespace TasollerLED
                     }
                 }
             }
-            Console.WriteLine("");
         }
 
         public static void SliderTick()
@@ -134,7 +130,7 @@ namespace TasollerLED
                         //キーを離している状態のキーにしか実行しないようにする
                         if (!sliderPadBase[i].KEY_DATA.isdown)
                         {
-                            KB_EVENT.KeyDown(sliderPadBase[i].KEY_DATA.key);
+                            KB_EVENT.KeyDown(sliderPadBase[i].KEY_DATA);
                             sliderPadBase[i].KEY_DATA.isdown = true;
                         }
                     }
@@ -157,7 +153,7 @@ namespace TasollerLED
                         //キーを離している状態のキーにしか実行しないようにする
                         if (!sliderPadBase[i].KEY_DATA.isdown)
                         {
-                            KB_EVENT.KeyDown(sliderPadBase[i].KEY_DATA.key);
+                            KB_EVENT.KeyDown(sliderPadBase[i].KEY_DATA);
                             sliderPadBase[i].KEY_DATA.isdown = true;
                         }
                     }
@@ -251,7 +247,7 @@ namespace TasollerLED
             {
                 ret[i] = new SliderAirBase
                 {
-                    KEY_DATA = kB_EVENT.Get_instance(KeyCode.TasollerAirkeymap[i])
+                    KEY_DATA = kB_EVENT.Get_KeyDataInstance(KeyCode.TasollerAirkeymap[i])
                 };
             }
 
@@ -272,7 +268,7 @@ namespace TasollerLED
                 ret[i] = new SliderPadBase
                 {
                     padnumber = i + 1,
-                    KEY_DATA = kB_EVENT.Get_instance(KeyCode.Tasoller32KeyMapReversed[i])
+                    KEY_DATA = kB_EVENT.Get_KeyDataInstance(KeyCode.Tasoller32KeyMapReversed[i])
                 };
             }
 

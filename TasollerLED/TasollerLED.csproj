@@ -83,7 +83,6 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="KeySend.cs" />
-    <Compile Include="ObfuscationSettings.cs" />
     <Compile Include="Padlight.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
